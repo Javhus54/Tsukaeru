@@ -1,14 +1,13 @@
-using NUnit.Framework;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Firefox;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Text.RegularExpressions;
-using OpenQA.Selenium.Support.UI;
-using OpenQA.Selenium.Interactions;
+using Protractor;
+using System.Reflection;
+using OpenQA.Selenium.IE;
+using OpenQA.Selenium.Chrome;
+using System.Runtime.Remoting;
+using System.Configuration;
 
 namespace Tsukaeru
 {
@@ -50,9 +49,9 @@ namespace Tsukaeru
 		{
 			IWebDriver webDriver;
 			NgWebDriver ngWebDriver;
-
+			string browserType = Constants.BrowserType;
 			string fixture = GetTestFixtureName();
-			switch (ConfigurationManager.AppSettings.Get("BrowserType"))
+			switch (browserType)
 			{
 				case "IE":
 					InternetExplorerOptions IeOptions = new InternetExplorerOptions { EnableNativeEvents = false, IgnoreZoomLevel = true };
@@ -88,7 +87,7 @@ namespace Tsukaeru
 			{
 				WedDriverDict.Add(fixture, ngWebDriver);
 			}
-			LogHelper.Log(LogHelper.LEVEL.INFO, null, "WebDriverFactory.InstantiateWebDriver() BrowserType = '{0}': for feature '{1}'", ConfigurationManager.AppSettings.Get("BrowserType"), fixture);
+			LogHelper.Log(LogHelper.LEVEL.INFO, null, "WebDriverHelper.InstantiateWebDriver() BrowserType = '{0}': for feature '{1}'", ConfigurationManager.AppSettings.Get("BrowserType"), fixture);
 		}
 		public static IWebDriver GetCurrentWebDriver()
 		{
@@ -98,7 +97,7 @@ namespace Tsukaeru
 				{
 					InstantiateWebDriver();
 				}
-				LogHelper.Log(LogHelper.LEVEL.DEBUG, null, "WebDriverFactory.GetCurrentWebDriver()");
+				LogHelper.Log(LogHelper.LEVEL.DEBUG, null, "WebDriverHelper.GetCurrentWebDriver()");
 				return WedDriverDict[GetTestFixtureName()];
 			}
 		}
@@ -119,14 +118,14 @@ namespace Tsukaeru
 		{
 			lock (DictLock)
 			{
-				LogHelper.Log(LogHelper.LEVEL.INFO, null, "WebDriverFactory.DeleteAllCookies()");
+				LogHelper.Log(LogHelper.LEVEL.INFO, null, "WebDriverHelper.DeleteAllCookies()");
 				GetCurrentWebDriver().Manage().Cookies.DeleteAllCookies();
 			}
 		}
 
 		public static string GetCurrentPageObject(Assembly executingAssembly)
 		{
-			string currentUrl = WebDriverFactory.GetCurrentWebDriver().Url.ToString().ToLower();
+			string currentUrl = WebDriverHelper.GetCurrentWebDriver().Url.ToString().ToLower();
 			// Strip all url arguments, after the .aspx extension, in order to find the page correctly e.g. "?batchId=1"
 			if (currentUrl.Contains(".aspx"))
 			{
@@ -193,7 +192,7 @@ namespace Tsukaeru
 			{
 				if (!Constants.PAGE_OBJECT_URLS.ContainsKey((ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl).ToLower()))
 				{
-					LogHelper.Log(LogHelper.LEVEL.DEBUG, null, "WebDriverFactory.AddPageObject(PageUrl = '{0}', PageObject = '{1}', isCustomerSite = '{2}') BaseURL = '{3}': added page to PAGE_OBJECT_URLS", PageUrl, PageObject, isCustomerSite.ToString(), ConfigurationManager.AppSettings.Get("BaseURL"));
+					LogHelper.Log(LogHelper.LEVEL.DEBUG, null, "WebDriverHelper.AddPageObject(PageUrl = '{0}', PageObject = '{1}', isCustomerSite = '{2}') BaseURL = '{3}': added page to PAGE_OBJECT_URLS", PageUrl, PageObject, isCustomerSite.ToString(), ConfigurationManager.AppSettings.Get("BaseURL"));
 					Constants.PAGE_OBJECT_URLS.Add((ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl).ToLower(), PageObject);
 				}
 			}

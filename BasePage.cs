@@ -18,11 +18,11 @@ namespace Tsukaeru
 		{
 			if (string.Equals(ConfigurationManager.AppSettings.Get("IsAngular"), "True", StringComparison.OrdinalIgnoreCase))
 			{
-				WebDriverFactory.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + urlParams);
+				WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + urlParams);
 				if (expectToOpen && !isOpen())
 				{
 					this.logout();
-					WebDriverFactory.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + urlParams);
+					WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + urlParams);
 					if (expectToOpen && !isOpen())
 					{
 						LogHelper.Log(LogHelper.LEVEL.ERROR, this.GetType(), "For Anguler Application Open(expectToOpen = '{0}', urlParams = '{1}') PageTitle = '{2}', PageUrl = '{3}', XPathValidator = '{4}': failed to open page", expectToOpen.ToString(), urlParams.ToString(), PageTitle, ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl, XPathValidator);
@@ -32,12 +32,12 @@ namespace Tsukaeru
 			}
 			else
 			{
-				WebDriverFactory.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl + urlParams);
+				WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl + urlParams);
 				System.Threading.Thread.Sleep(2 * 1000);
 				if (expectToOpen && !isOpen())
 				{
 					this.logout();
-					WebDriverFactory.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl + urlParams);
+					WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl + urlParams);
 					if (expectToOpen && !isOpen())
 					{
 						LogHelper.Log(LogHelper.LEVEL.ERROR, this.GetType(), "Open(expectToOpen = '{0}', urlParams = '{1}') PageTitle = '{2}', PageUrl = '{3}', XPathValidator = '{4}': failed to open page", expectToOpen.ToString(), urlParams.ToString(), PageTitle, ConfigurationManager.AppSettings.Get("BaseURL") + PageUrl, XPathValidator);
@@ -51,7 +51,7 @@ namespace Tsukaeru
 		{
 			// Poll every 100ms until timeout is reached
 			double timerCount = 0;
-			IWebDriver driver = WebDriverFactory.GetCurrentWebDriver();
+			IWebDriver driver = WebDriverHelper.GetCurrentWebDriver();
 			var javaScriptExecutor = driver as IJavaScriptExecutor;
 			while (timerCount <= timeoutInSeconds)
 			{
@@ -59,15 +59,15 @@ namespace Tsukaeru
 				{
 					try
 					{
-						if (WebDriverFactory.GetCurrentWebDriver().FindElement(By.XPath(XPathValidator)) != null)
+						if (WebDriverHelper.GetCurrentWebDriver().FindElement(By.XPath(XPathValidator)) != null)
 						{
 							// Finally validate that complete Url has expected PageUrl
-							if (WebDriverFactory.GetCurrentWebDriver().Url.Contains("localhost"))
+							if (WebDriverHelper.GetCurrentWebDriver().Url.Contains("localhost"))
 							{
 								LogHelper.Log(LogHelper.LEVEL.INFO, this.GetType(), "REWRITE isOpen(timeoutInSeconds = '{1}') XPathValidator = '{2}', timerCount = '{3}': returned 'True'", this.ToString(), timeoutInSeconds.ToString(), XPathValidator, timerCount);
 								return true;
 							}
-							if (WebDriverFactory.GetCurrentWebDriver().Url.IndexOf(PageUrl, StringComparison.OrdinalIgnoreCase) >= 0)
+							if (WebDriverHelper.GetCurrentWebDriver().Url.IndexOf(PageUrl, StringComparison.OrdinalIgnoreCase) >= 0)
 							{
 								LogHelper.Log(LogHelper.LEVEL.INFO, this.GetType(), "isOpen(timeoutInSeconds = '{1}') XPathValidator = '{2}', timerCount = '{3}': returned 'True'", this.ToString(), timeoutInSeconds.ToString(), XPathValidator, timerCount);
 								return true;
@@ -92,7 +92,7 @@ namespace Tsukaeru
 			string pageSource = string.Empty;
 			if (isOpen())
 			{
-				pageSource = WebDriverFactory.GetCurrentWebDriver().PageSource;
+				pageSource = WebDriverHelper.GetCurrentWebDriver().PageSource;
 			}
 			LogHelper.Log(LogHelper.LEVEL.INFO, this.GetType(), "GetPageSource() PageTitle = '{0}', PageUrl = '{1}', XPathValidator = '{2}': returned PageSource", PageTitle, PageUrl, XPathValidator);
 			return pageSource;
@@ -101,7 +101,7 @@ namespace Tsukaeru
 		{
 			try
 			{
-				IWebDriver driver = WebDriverFactory.GetCurrentWebDriver();
+				IWebDriver driver = WebDriverHelper.GetCurrentWebDriver();
 				driver.FindElement(By.XPath("//a[contains(.,'Log Out')] | //a[contains(.,'Logout')] | //a[contains(.,'Sign Out')]")).Click();
 			}
 			catch (Exception e)

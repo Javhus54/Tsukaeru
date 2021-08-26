@@ -1,88 +1,127 @@
-﻿using OfficeOpenXml;
+﻿using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
+using System.Linq;
 
 namespace Tsukaeru
 {
-     public static class ExcelHelper
+    public static class ExcelHelper
     {
-        private static ExcelWorksheet ReadFromExcel(string fileName, int sheetNo)
+        public static DataTable ReadExcelSheet(string fileName, bool header = true)
         {
-            string path = Constants.INPUT_DIRECOTRY + fileName;
-            if (File.Exists(path))
+            string path = @"c:\temp\";
+            List<string> Headers = new List<string>();
+            DataTable dataTable = new DataTable();
+            using (SpreadsheetDocument spreadsheet = SpreadsheetDocument.Open(path+fileName, false))
             {
-                var file = new FileInfo(path);
-                ExcelPackage excel = new ExcelPackage(file);
-                ExcelWorkbook workbook = excel.Workbook;
-                ExcelWorksheet worksheet = workbook.Worksheets[sheetNo];
-                return worksheet;
+                //Read the first Sheets 
+                Sheet sheet = spreadsheet.WorkbookPart.Workbook.Sheets.GetFirstChild<Sheet>();
+                Worksheet worksheet = (spreadsheet.WorkbookPart.GetPartById(sheet.Id.Value) as WorksheetPart).Worksheet;
+                IEnumerable<Row> rows = worksheet.GetFirstChild<SheetData>().Descendants<Row>();
+                int counter = 0;
+                foreach (Row row in rows)
+                {
+                    counter++;
+                    //Read the first row as header
+                    if (counter == 1)
+                    {
+                        var j = 1;
+                        foreach (Cell cell in row.Descendants<Cell>())
+                        {
+                            var colunmName = header ? GetCellValue(spreadsheet, cell) : "Field" + j++;
+                            Console.WriteLine(colunmName);
+                            Headers.Add(colunmName);
+                            dataTable.Columns.Add(colunmName);
+                        }
+                    }
+                    else
+                    {
+                        dataTable.Rows.Add();
+                        int i = 0;
+                        foreach (Cell cell in row.Descendants<Cell>())
+                        {
+                            dataTable.Rows[dataTable.Rows.Count - 1][i] = GetCellValue(spreadsheet, cell);
+                            i++;
+                        }
+                    }
+                }
+
             }
-            else
+            return dataTable;
+        }
+        public static string GetCellValue(SpreadsheetDocument spreadsheet, Cell cell)
+        {
+            string value = cell.CellValue.InnerText;
+            if (cell.DataType != null && cell.DataType.Value == CellValues.SharedString)
             {
-                Console.WriteLine("File Not Found");
-                return null;
+                return spreadsheet.WorkbookPart.SharedStringTablePart.SharedStringTable.ChildElements.GetItem(int.Parse(value)).InnerText;
             }
+            return value;
         }
-        private static string ReadCellFromExcel(string fileName, int sheetNo, int row, int column, bool header)
+
+        public static void CreateExcelFile(DataTable table)
         {
-            var worksheet = ReadFromExcel(fileName, sheetNo);
-            string result = worksheet.Cells[row + (header ? 1 : 0), column].Value.ToString();
-            return result;
-        }
-        public static List<string> ReadAllRows(string fileName, int sheetNo, int column, bool header = true)
-        {
-            List<string> result = new List<string>();
-            var startRow = header ? 2 : 1;
-            var worksheet = ReadFromExcel(fileName, sheetNo);
-            var rowCount = worksheet.Dimension.End.Row;
-            for (var rowNo = startRow; rowNo <= rowCount; rowNo++)
-                result.Add(worksheet.Cells[rowNo, column].Value.ToString());
-            return result;
-        }
-        public static string[,] ReadAllData(string fileName, int sheetNo, bool header = true)
-        {
-            var worksheet = ReadFromExcel(fileName, sheetNo);
-            int columnCount = worksheet.Dimension.End.Column;
-            int rowCount = worksheet.Dimension.End.Row;
-            string[,] result = new string[rowCount + 2, columnCount + 2];
-            int startRow = header ? 2 : 1;
-            for (int row = startRow; row <= rowCount; row++)
-                for (int column = 1; column <= columnCount; column++)
-                    result[row, column] = worksheet.Cells[row, column].Value.ToString();
-            return result;
-        }
-        public static bool WriteAllData(string filename, int sheetNo, string[,] data, int columnCount, int rowCount, string header = null)
-        {
-            int flag = 1;
-            string filePath = Constants.OUTPUT_DIRECTORY;
-            if (File.Exists(filePath + filename))
+            using (var workbook = SpreadsheetDocument.Create(@"c:\temp\Output.xlsx", SpreadsheetDocumentType.Workbook))
             {
-                string[] fileName = filename.Split('.');
-                int i;
-                string reName;
-                for (reName = $"{fileName[0]}_{DateTime.Now:ddMMMyyyy}.{fileName[1]}", i = 0; File.Exists(filePath + reName); i++, reName = $"{fileName[0]}_{DateTime.Now:ddMMMyyyy}_{i}.{fileName[1]}") ;
-                File.Move(filePath + filename, destFileName: filePath + reName);
-                LogHelper.Log(LogHelper.LEVEL.INFO, null, $"Succesfull rename{filePath + filename} TO {filePath + reName}");
-                filename = reName;
+                var workbookPart = workbook.AddWorkbookPart();
+
+                workbook.WorkbookPart.Workbook = new Workbook();
+
+                workbook.WorkbookPart.Workbook.Sheets = new Sheets();
+
+                //foreach (System.Data.DataTable table in ds.Tables)
+                //{
+
+                var sheetPart = workbook.WorkbookPart.AddNewPart<WorksheetPart>();
+                var sheetData = new SheetData();
+                sheetPart.Worksheet = new Worksheet(sheetData);
+
+                Sheets sheets = workbook.WorkbookPart.Workbook.GetFirstChild<Sheets>();
+                string relationshipId = workbook.WorkbookPart.GetIdOfPart(sheetPart);
+
+                uint sheetId = 1;
+                if (sheets.Elements<Sheet>().Count() > 0)
+                {
+                    sheetId =
+                        sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
+                }
+
+                Sheet sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = table.TableName };
+                sheets.Append(sheet);
+
+                Row headerRow = new Row();
+
+                List<String> columns = new List<string>();
+                foreach (DataColumn column in table.Columns)
+                {
+                    columns.Add(column.ColumnName);
+
+                    Cell cell = new Cell();
+                    cell.DataType = CellValues.String;
+                    cell.CellValue = new CellValue(column.ColumnName);
+                    headerRow.AppendChild(cell);
+                }
+                sheetData.AppendChild(headerRow);
+
+                foreach (DataRow dsrow in table.Rows)
+                {
+                    Row newRow = new Row();
+                    foreach (string col in columns)
+                    {
+                        Cell cell = new Cell();
+                        cell.DataType = CellValues.String;
+                        cell.CellValue = new CellValue(dsrow[col].ToString());
+                        newRow.AppendChild(cell);
+                    }
+
+                    sheetData.AppendChild(newRow);
+                }
+                workbook.Save();
             }
-            string path = filePath + filename;
-            Stream stream = File.Create(path);
-            ExcelPackage excel = new ExcelPackage();
-            ExcelWorkbook workbook = excel.Workbook;
-            ExcelWorksheet worksheet = workbook.Worksheets.Add(sheetNo.ToString());
-            if (header != null)
-            {
-                worksheet.Cells[1, 1].Value = header;
-                flag = 2;
-            }
-            for (int row = 0; row < rowCount; row++)
-                for (int column = 0; column < columnCount; column++)
-                    worksheet.Cells[row + flag, column + 1].Value = data[row, column];
-            excel.SaveAs(stream);
-            stream.Flush();
-            stream.Close();
-            return true;
         }
     }
 }

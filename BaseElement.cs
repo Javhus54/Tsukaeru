@@ -1,13 +1,13 @@
 using System;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
-using NUnit.Framework;
-using Protractor;
 using OpenQA.Selenium.Support.UI;
+using SeleniumExtras;
+using Protractor;
 
 namespace Tsukaeru
 {
-	public abstract class BaseElement
+    public abstract class BaseElement
 	{
 		public enum SelectBy { ClassName, CssSelector, Id, LinkText, Name, PartialLinkText, TagName, XPath, Binding, Model, Repeater, SelectedOption };
 		private SelectBy sourceBy;
@@ -42,7 +42,7 @@ namespace Tsukaeru
 		{
 			DateTime cutoffTime = DateTime.Now.AddSeconds(timeoutSeconds);
 			IWebElement element = null;
-			if (SourceStr != null && WebDriverFactory.GetCurrentWebDriver() != null)
+			if (SourceStr != null && WebDriverHelper.GetCurrentWebDriver() != null)
 			{
 				while (element == null && cutoffTime > DateTime.Now) // Continue trying to FindElement() until cutoffTime is hit
 				{
@@ -51,51 +51,51 @@ namespace Tsukaeru
 						switch (sourceBy)
 						{
 							case SelectBy.ClassName:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.ClassName(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.ClassName(SourceStr));
 								break;
 
 							case SelectBy.CssSelector:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.CssSelector(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.CssSelector(SourceStr));
 								break;
 
 							case SelectBy.LinkText:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.LinkText(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.LinkText(SourceStr));
 								break;
 
 							case SelectBy.Name:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.Name(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.Name(SourceStr));
 								break;
 
 							case SelectBy.PartialLinkText:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.PartialLinkText(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.PartialLinkText(SourceStr));
 								break;
 
 							case SelectBy.TagName:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.TagName(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.TagName(SourceStr));
 								break;
 
 							case SelectBy.XPath:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.XPath(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.XPath(SourceStr));
 								break;
 
 							case SelectBy.Id:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(By.Id(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(By.Id(SourceStr));
 								break;
 
 							case SelectBy.Binding:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(NgBy.Binding(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(NgBy.Binding(SourceStr));
 								break;
 
 							case SelectBy.Model:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(NgBy.Model(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(NgBy.Model(SourceStr));
 								break;
 
 							case SelectBy.Repeater:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(NgBy.Repeater(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(NgBy.Repeater(SourceStr));
 								break;
 
 							case SelectBy.SelectedOption:
-								element = WebDriverFactory.GetCurrentWebDriver().FindElement(NgBy.SelectedOption(SourceStr));
+								element = WebDriverHelper.GetCurrentWebDriver().FindElement(NgBy.SelectedOption(SourceStr));
 								break;
 
 							default:
@@ -122,17 +122,17 @@ namespace Tsukaeru
 
         public void WaitForElement(string type = "Displayed",int wait = 60)
         {
-			var webDriverWait = new WebDriverWait(WebDriverFactory.GetCurrentWebDriver(), new TimeSpan(0, 0, wait));
+			var webDriverWait = new WebDriverWait(WebDriverHelper.GetCurrentWebDriver(), new TimeSpan(0, 0, wait));
             switch (type)
             {
 				case "Clicks":
-					webDriverWait.Until(ExpectedConditions.ElementToBeClickable(By.XPath(SourceStr)));
+					webDriverWait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeClickable(By.XPath(SourceStr)));
 					break;
 				case "Displayed":
-					webDriverWait.Until(ExpectedConditions.ElementIsVisible(By.XPath(sourceStr)));
+					webDriverWait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementIsVisible(By.XPath(sourceStr)));
 					break;
 				case "Selects":
-					webDriverWait.Until(ExpectedConditions.ElementToBeSelected(By.XPath(sourceStr)));
+					webDriverWait.Until(SeleniumExtras.WaitHelpers.ExpectedConditions.ElementToBeSelected(By.XPath(sourceStr)));
 					break;
 			}
 		}
@@ -171,7 +171,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Tsukaeru.Constants.STALE_MAX_ATTEMPTS)
 					{
 						ContainsInnerText(validation, expectedResult, staleAttempts++);
 					}
@@ -197,7 +197,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						ContainsInnerTextOnReplace(validation, replaceString, expectedResult, staleAttempts++);
 					}
@@ -221,7 +221,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						ValidateInnerText(validation, expectedResult, staleAttempts++);
 					}
@@ -245,7 +245,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						ValidateAttributeText(validation, attribute, expectedResult, staleAttempts++);
 					}
@@ -269,7 +269,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						ValidateAttributeTextContains(validation, attribute, expectedResult, staleAttempts++);
 					}
@@ -292,7 +292,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						return Displayed(staleAttempts++);
 					}
@@ -317,7 +317,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						return Enabled(staleAttempts++);
 					}
@@ -336,7 +336,7 @@ namespace Tsukaeru
 			IWebElement element = FindElement(Constants.ELEMENT_VALIDATE_FOCUSED_TIMEOUT);
 			if(element != null)
 			{
-				IWebElement activeElement = WebDriverFactory.GetCurrentWebDriver().SwitchTo().ActiveElement();
+				IWebElement activeElement = WebDriverHelper.GetCurrentWebDriver().SwitchTo().ActiveElement();
 				result = element.Equals(activeElement);
 			}
 			return result;
@@ -358,7 +358,7 @@ namespace Tsukaeru
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						return Selected(staleAttempts++);
 					}
@@ -406,14 +406,14 @@ namespace Tsukaeru
 				try
 				{
 					LogHelper.Log(LogHelper.LEVEL.INFO, this.GetType(), "ClickElementPosition(staleAttempts = '{0}') SourceBy = '{1}', SourceStr = '{2}'", staleAttempts, SourceBy.ToString(), SourceStr);
-					Actions actions = new Actions(WebDriverFactory.GetCurrentWebDriver());
+					Actions actions = new Actions(WebDriverHelper.GetCurrentWebDriver());
 					actions.MoveToElement(element);
 					actions.Click();
 					actions.Perform();
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						ClickElementPosition(staleAttempts++);
 					}
@@ -432,13 +432,13 @@ namespace Tsukaeru
 				try
 				{
 					//LogHelper.Log(LogHelper.LEVEL.INFO, this.GetType(), "ClickElementPosition(staleAttempts = '{0}') SourceBy = '{1}', SourceStr = '{2}'", staleAttempts, SourceBy.ToString(), SourceStr);
-					Actions actions = new Actions(WebDriverFactory.GetCurrentWebDriver());
+					Actions actions = new Actions(WebDriverHelper.GetCurrentWebDriver());
 					actions.MoveToElement(element);
 					actions.Perform();
 				}
 				catch (StaleElementReferenceException)
 				{
-					if (staleAttempts < Core.Constants.STALE_MAX_ATTEMPTS)
+					if (staleAttempts < Constants.STALE_MAX_ATTEMPTS)
 					{
 						MoveToElement(staleAttempts++);
 					}
@@ -455,7 +455,7 @@ namespace Tsukaeru
 			if (element != null)
 			{
 				LogHelper.Log(LogHelper.LEVEL.DEBUG, this.GetType(), "Hover() SourceBy = '{0}', SourceStr = '{1}'", SourceBy.ToString(), SourceStr);
-				Actions actions = new Actions(WebDriverFactory.GetCurrentWebDriver());
+				Actions actions = new Actions(WebDriverHelper.GetCurrentWebDriver());
 				actions.MoveToElement(element);
 				actions.Perform();
 				return;
@@ -468,7 +468,7 @@ namespace Tsukaeru
 			if (element != null)
 			{
 				LogHelper.Log(LogHelper.LEVEL.DEBUG, this.GetType(), "ClickAndHold() SourceBy = '{0}', SourceStr = '{1}'", SourceBy.ToString(), SourceStr);
-				Actions actions = new Actions(WebDriverFactory.GetCurrentWebDriver());
+				Actions actions = new Actions(WebDriverHelper.GetCurrentWebDriver());
 				actions.ClickAndHold(element);
 				actions.Perform();
 				return;
@@ -481,7 +481,7 @@ namespace Tsukaeru
 			if (element != null)
 			{
 				LogHelper.Log(LogHelper.LEVEL.DEBUG, this.GetType(), "Drop() SourceBy = '{0}', SourceStr = '{1}'", SourceBy.ToString(), SourceStr);
-				Actions actions = new Actions(WebDriverFactory.GetCurrentWebDriver());
+				Actions actions = new Actions(WebDriverHelper.GetCurrentWebDriver());
 				actions.MoveToElement(element);
 				actions.Perform();
 				actions.Release();

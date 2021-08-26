@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace NSpector.Core
+namespace Tsukaeru
 {
 	public static class Constants
 	{
+		public const string BrowserType = "Chrome";
 		// Timeouts (seconds)
 		public const double PAGE_ISOPEN_DEFAULT_TIMEOUT = 4.0;
 		public const double FIND_ELEMENT_TIMEOUT = 25.0;
@@ -26,14 +27,7 @@ namespace NSpector.Core
 		public const int STALE_MAX_ATTEMPTS = 3;
 
 		//frequently used IDs
-    class Logins
-    {
-        class Login1
-        {
-            string username = "";
-            string password = "";
-        }
-    }
+
 		// Directory Locations
 		public static string IMAGES_DIRECTORY = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Images\");
 		public static string INPUT_DIRECTORY = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\File Input\");

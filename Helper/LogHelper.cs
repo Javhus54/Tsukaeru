@@ -5,9 +5,6 @@ using System.Diagnostics;
 using NUnit.Framework;
 using OpenQA.Selenium;
 using TechTalk.SpecFlow;
-using WDSE;
-using WDSE.Decorators;
-using WDSE.ScreenshotMaker;
 
 namespace Tsukaeru
 {
@@ -20,14 +17,14 @@ namespace Tsukaeru
 		{
 			lock (DictLock)
 			{
-				LoggerDict.Add(WebDriverFactory.GetTestFixtureName(), new List<String>());
+				LoggerDict.Add(WebDriverHelper.GetTestFixtureName(), new List<String>());
 			}
 		}
 		public static void Log(LEVEL level, Type callerObject, string format, params object[] args)
 		{
 			lock (DictLock)
 			{
-				if (!LoggerDict.ContainsKey(WebDriverFactory.GetTestFixtureName()))
+				if (!LoggerDict.ContainsKey(WebDriverHelper.GetTestFixtureName()))
 				{
 					InstantiateLogger();
 				}
@@ -43,7 +40,7 @@ namespace Tsukaeru
 				}
 
 				// We insert a new line in between scenarios except the first
-				if(string.Format(format, args).Contains(WebDriverFactory.GetTestScenarioName()) && LoggerDict[WebDriverFactory.GetTestFixtureName()].Count != 0)
+				if(string.Format(format, args).Contains(WebDriverHelper.GetTestScenarioName()) && LoggerDict[WebDriverHelper.GetTestFixtureName()].Count != 0)
 				{
 					InsertNewLine();
 				}
@@ -51,29 +48,29 @@ namespace Tsukaeru
 				switch (level)
 				{
 					case LEVEL.ERROR:
-						LoggerDict[WebDriverFactory.GetTestFixtureName()].Add(timeStampedEntry);
-						if (!WebDriverFactory.GetTestAssemblyName().Equals("API"))
+						LoggerDict[WebDriverHelper.GetTestFixtureName()].Add(timeStampedEntry);
+						if (!WebDriverHelper.GetTestAssemblyName().Equals("API"))
 						{
 							CaptureScreen();
 						}
-						string file = Constants.LOGS_DIRECTORY + WebDriverFactory.GetTestFixtureName() + ".log";
-						FileHelper.WriteListToFile(file, LoggerDict[WebDriverFactory.GetTestFixtureName()], true);
+						string file = Constants.LOGS_DIRECTORY + WebDriverHelper.GetTestFixtureName() + ".log";
+						FileHelper.WriteListToFile(file, LoggerDict[WebDriverHelper.GetTestFixtureName()], true);
 						Assert.Fail(string.Format(format, args));
 						break;
 
 					case LEVEL.WARN:
-						LoggerDict[WebDriverFactory.GetTestFixtureName()].Add(timeStampedEntry);
+						LoggerDict[WebDriverHelper.GetTestFixtureName()].Add(timeStampedEntry);
 						break;
 
 					case LEVEL.DEBUG:
-						if (String.Equals(ConfigurationManager.AppSettings.Get("DebugLogging").ToLower(), "true"))
+						if (true)
 						{
-							LoggerDict[WebDriverFactory.GetTestFixtureName()].Add(timeStampedEntry);
+							LoggerDict[WebDriverHelper.GetTestFixtureName()].Add(timeStampedEntry);
 						}
 						break;
 
 					case LEVEL.INFO:
-						LoggerDict[WebDriverFactory.GetTestFixtureName()].Add(timeStampedEntry);
+						LoggerDict[WebDriverHelper.GetTestFixtureName()].Add(timeStampedEntry);
 						break;
 
 					case LEVEL.FATAL:
@@ -88,14 +85,14 @@ namespace Tsukaeru
 		{
 			lock (DictLock)
 			{
-				LoggerDict.Remove(WebDriverFactory.GetTestFixtureName());
+				LoggerDict.Remove(WebDriverHelper.GetTestFixtureName());
 			}
 		}
 		public static void InsertNewLine()
 		{
 			lock (DictLock)
 			{
-				LoggerDict[WebDriverFactory.GetTestFixtureName()].Add(System.Environment.NewLine);
+				LoggerDict[WebDriverHelper.GetTestFixtureName()].Add(System.Environment.NewLine);
 			}
 		}
 		public static void IsTrue(bool condition, Type callerObject, string format, params object[] args)
@@ -174,10 +171,10 @@ namespace Tsukaeru
 			Exception commandException = new Exception("Failed capturing screenshot.");
 			try
 			{
-				string file = Constants.LOGS_DIRECTORY + WebDriverFactory.GetTestScenarioName() + ".jpg";
-				Screenshot ss = ((ITakesScreenshot)WebDriverFactory.GetCurrentWebDriver()).GetScreenshot();
+				string file = Constants.LOGS_DIRECTORY + WebDriverHelper.GetTestScenarioName() + ".jpg";
+				Screenshot ss = ((ITakesScreenshot)WebDriverHelper.GetCurrentWebDriver()).GetScreenshot();
 				ss.SaveAsFile(file);
-				//var screen = WebDriverFactory.GetCurrentWebDriver().TakeScreenshot(new VerticalCombineDecorator(new ScreenshotMaker()));
+				//var screen = WebDriverHelper.GetCurrentWebDriver().TakeScreenshot(new VerticalCombineDecorator(new ScreenshotMaker()));
 				//System.IO.MemoryStream stream = new System.IO.MemoryStream(screen);
 				//System.Drawing.Image myImage = System.Drawing.Image.FromStream(stream);
 				//myImage.Save(file, System.Drawing.Imaging.ImageFormat.Jpeg);
@@ -193,10 +190,10 @@ namespace Tsukaeru
 			Exception commandException = new Exception("Failed capturing screenshot.");
 			try
 			{
-				string file = Constants.LOGS_DIRECTORY + WebDriverFactory.GetTestScenarioName() + " " + label + ".jpg";
-				Screenshot ss = ((ITakesScreenshot)WebDriverFactory.GetCurrentWebDriver()).GetScreenshot();
+				string file = Constants.LOGS_DIRECTORY + WebDriverHelper.GetTestScenarioName() + " " + label + ".jpg";
+				Screenshot ss = ((ITakesScreenshot)WebDriverHelper.GetCurrentWebDriver()).GetScreenshot();
 				ss.SaveAsFile(file);
-				//var screen = WebDriverFactory.GetCurrentWebDriver().TakeScreenshot(new VerticalCombineDecorator(new ScreenshotMaker()));
+				//var screen = WebDriverHelper.GetCurrentWebDriver().TakeScreenshot(new VerticalCombineDecorator(new ScreenshotMaker()));
 				//System.IO.MemoryStream stream = new System.IO.MemoryStream(screen);
 				//System.Drawing.Image myImage = System.Drawing.Image.FromStream(stream);
 				//myImage.Save(file, System.Drawing.Imaging.ImageFormat.Jpeg);
