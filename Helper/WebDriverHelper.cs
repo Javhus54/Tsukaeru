@@ -6,6 +6,8 @@ using Protractor;
 using System.Reflection;
 using OpenQA.Selenium.IE;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Edge;
 using System.Runtime.Remoting;
 using System.Configuration;
 
@@ -49,7 +51,7 @@ namespace Tsukaeru
 		{
 			IWebDriver webDriver;
 			NgWebDriver ngWebDriver;
-			string browserType = Constants.BrowserType;
+			string browserType = "edge";
 			string fixture = GetTestFixtureName();
 			switch (browserType)
 			{
@@ -67,6 +69,7 @@ namespace Tsukaeru
 					chromeOptions.AddArgument("--no-sandbox");
 					chromeOptions.AddArgument("--start-maximized");
 					chromeOptions.AddArgument("--disable-xss-auditor");
+					chromeOptions.AddArgument("--remote-debugging-port=9222");
 					chromeOptions.AddUserProfilePreference("download.default_directory", @Constants.DOWNLOADS_DIRECTORY.ToString());
                     webDriver = new ChromeDriver(ChromeDriverService.CreateDefaultService(), chromeOptions, TimeSpan.FromMinutes(2));
 					ngWebDriver = new NgWebDriver(webDriver);
@@ -75,19 +78,17 @@ namespace Tsukaeru
 					//{ ngWebDriver.IgnoreSynchronization = iSync; } // set IgnoreSynchronization = true if the application is NOT Anguler
 					//else { }
 					break;
-
 				default:
-					webDriver = new InternetExplorerDriver();
-					webDriver.Manage().Window.Maximize();
-					ngWebDriver = new NgWebDriver(webDriver);
-					ngWebDriver.IgnoreSynchronization = string.Equals(ConfigurationManager.AppSettings.Get("IsAngular"), "True", StringComparison.OrdinalIgnoreCase) ? false : true;
-					break;
+                    webDriver = new EdgeDriver();
+                    webDriver.Manage().Window.Maximize();
+                    ngWebDriver = new NgWebDriver(webDriver);
+                    break;
 			}
-			lock (DictLock)
-			{
-				WedDriverDict.Add(fixture, ngWebDriver);
-			}
-			LogHelper.Log(LogHelper.LEVEL.INFO, null, "WebDriverHelper.InstantiateWebDriver() BrowserType = '{0}': for feature '{1}'", ConfigurationManager.AppSettings.Get("BrowserType"), fixture);
+            lock (DictLock)
+            {
+                WedDriverDict.Add(fixture, ngWebDriver);
+            }
+            LogHelper.Log(LogHelper.LEVEL.INFO, null, "WebDriverHelper.InstantiateWebDriver() BrowserType = '{0}': for feature '{1}'", ConfigurationManager.AppSettings.Get("BrowserType"), fixture);
 		}
 		public static IWebDriver GetCurrentWebDriver()
 		{

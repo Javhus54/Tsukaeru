@@ -63,7 +63,7 @@ namespace Tsukaeru
             return value;
         }
 
-        public static void CreateExcelFile(DataTable table)
+        public static void CreateExcelFile(DataTable dataTable)
         {
             using (var workbook = SpreadsheetDocument.Create(@"c:\temp\Output.xlsx", SpreadsheetDocumentType.Workbook))
             {
@@ -72,55 +72,58 @@ namespace Tsukaeru
                 workbook.WorkbookPart.Workbook = new Workbook();
 
                 workbook.WorkbookPart.Workbook.Sheets = new Sheets();
+                DataSet ds = new DataSet();
+                ds.Tables.Add(dataTable);
 
-                //foreach (System.Data.DataTable table in ds.Tables)
-                //{
-
-                var sheetPart = workbook.WorkbookPart.AddNewPart<WorksheetPart>();
-                var sheetData = new SheetData();
-                sheetPart.Worksheet = new Worksheet(sheetData);
-
-                Sheets sheets = workbook.WorkbookPart.Workbook.GetFirstChild<Sheets>();
-                string relationshipId = workbook.WorkbookPart.GetIdOfPart(sheetPart);
-
-                uint sheetId = 1;
-                if (sheets.Elements<Sheet>().Count() > 0)
+                foreach (DataTable table in ds.Tables)
                 {
-                    sheetId =
-                        sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
-                }
 
-                Sheet sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = table.TableName };
-                sheets.Append(sheet);
+                    var sheetPart = workbook.WorkbookPart.AddNewPart<WorksheetPart>();
+                    var sheetData = new SheetData();
+                    sheetPart.Worksheet = new Worksheet(sheetData);
 
-                Row headerRow = new Row();
+                    Sheets sheets = workbook.WorkbookPart.Workbook.GetFirstChild<Sheets>();
+                    string relationshipId = workbook.WorkbookPart.GetIdOfPart(sheetPart);
 
-                List<String> columns = new List<string>();
-                foreach (DataColumn column in table.Columns)
-                {
-                    columns.Add(column.ColumnName);
-
-                    Cell cell = new Cell();
-                    cell.DataType = CellValues.String;
-                    cell.CellValue = new CellValue(column.ColumnName);
-                    headerRow.AppendChild(cell);
-                }
-                sheetData.AppendChild(headerRow);
-
-                foreach (DataRow dsrow in table.Rows)
-                {
-                    Row newRow = new Row();
-                    foreach (string col in columns)
+                    uint sheetId = 1;
+                    if (sheets.Elements<Sheet>().Count() > 0)
                     {
-                        Cell cell = new Cell();
-                        cell.DataType = CellValues.String;
-                        cell.CellValue = new CellValue(dsrow[col].ToString());
-                        newRow.AppendChild(cell);
+                        sheetId =
+                            sheets.Elements<Sheet>().Select(s => s.SheetId.Value).Max() + 1;
                     }
 
-                    sheetData.AppendChild(newRow);
+                    Sheet sheet = new Sheet() { Id = relationshipId, SheetId = sheetId, Name = table.TableName };
+                    sheets.Append(sheet);
+
+                    Row headerRow = new Row();
+
+                    List<String> columns = new List<string>();
+                    foreach (DataColumn column in table.Columns)
+                    {
+                        columns.Add(column.ColumnName);
+
+                        Cell cell = new Cell();
+                        cell.DataType = CellValues.String;
+                        cell.CellValue = new CellValue(column.ColumnName);
+                        headerRow.AppendChild(cell);
+                    }
+                    sheetData.AppendChild(headerRow);
+
+                    foreach (DataRow dsrow in table.Rows)
+                    {
+                        Row newRow = new Row();
+                        foreach (string col in columns)
+                        {
+                            Cell cell = new Cell();
+                            cell.DataType = CellValues.String;
+                            cell.CellValue = new CellValue(dsrow[col].ToString());
+                            newRow.AppendChild(cell);
+                        }
+
+                        sheetData.AppendChild(newRow);
+                    }
+                    workbook.Save();
                 }
-                workbook.Save();
             }
         }
     }
