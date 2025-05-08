@@ -6,41 +6,50 @@ using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.ObjectModel;
 using System.IO;
+using Tsukaeru.Helpers;
 
-namespace SeleniumCsharp
+namespace Tsukaeru
 {
     public class Tests
     {
-        IWebDriver webDriver;
+        RepeatSteps repeatSteps = new RepeatSteps();
+        WhatsAppLogin whatsAppLogin = new WhatsAppLogin();
         //private  webDriverWait = null;
         [OneTimeSetUp]
         public void Setup()
         {
-            ChromeOptions chromeOptions = new ChromeOptions();
-            chromeOptions.AddArgument("--no-sandbox");
-            chromeOptions.AddArgument("--start-maximized");
-            chromeOptions.AddArgument("--disable-xss-auditor");
-            chromeOptions.AddArgument("--remote-debugging-port=9222");
-            webDriver = new ChromeDriver(ChromeDriverService.CreateDefaultService(), chromeOptions, TimeSpan.FromMinutes(2));
-            var webDriverWait = new WebDriverWait(webDriver, new TimeSpan(0, 0, 10));
-
+            WebDriverHelper.InstantiateWebDriver();
         }
 
         [Test]
-        public void VerifyGmailAvailable()
+        public void WhatsAppSendMessageTo()
         {
-            webDriver.Navigate().GoToUrl("https://www.google.com/");
-            Assert.That(webDriver.FindElement(By.XPath("//a[text()='Gmail']")).Displayed);
+            string friendName = "Javed";
+            whatsAppLogin.Open();
+            whatsAppLogin.LoggedInConformation.WaitForElement("Displayed", 60);
+            whatsAppLogin.ContanctSearchBox.InputText(friendName);
+            Thread.Sleep(100);
+            whatsAppLogin.FirstSearchResult.WaitForElement("Clicks", 60);
+            whatsAppLogin.FirstSearchResult.Click();
+            for (int i = 0; i < 10; i++)
+            {
+                whatsAppLogin.TypeAMessage.WaitForElement("Clicks", 60);
+                whatsAppLogin.TypeAMessage.InputText("Automated Message");
+                whatsAppLogin.TypeAMessage.InputText(Keys.Enter);
+            }
+            whatsAppLogin.SettingsIcon.WaitForElement("Clicks", 60);
+            whatsAppLogin.SettingsIcon.Click();
+            whatsAppLogin.LogOut.WaitForElement("Clicks", 60);
+            whatsAppLogin.LogOut.Click();
+            whatsAppLogin.ConfirmLogOut.WaitForElement("Clicks", 60);
+            whatsAppLogin.ConfirmLogOut.Click();
+            whatsAppLogin.IsOpen();
         }
 
         [OneTimeTearDown]
         public void TearDown()
         {
-            if (webDriver != null)
-            {
-                webDriver.Quit();
-                webDriver.Dispose();
-            }
+            WebDriverHelper.QuitCurrentWebDriver();
         }
     }//Tests
 }//SeleniumCsharp
