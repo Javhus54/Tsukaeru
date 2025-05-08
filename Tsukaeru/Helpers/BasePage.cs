@@ -17,43 +17,37 @@ namespace Tsukaeru.Helpers
         // Open this page directly
         public void Open(bool expectToOpen = true, string urlParams = "")
         {
-            PageUrl = PageUrl + urlParams;
-            if (string.Equals(ConfigurationManager.AppSettings.Get("IsAngular"), "True", StringComparison.OrdinalIgnoreCase))
+            //PageUrl = /*PageUrl + urlParams*/;
+            if (!IsOpen())
             {
-                if (!IsOpen())
+                WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(PageUrl + urlParams);
+                System.Threading.Thread.Sleep(2 * 1000);
+                if (expectToOpen && !IsOpen())
                 {
-                    WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(urlParams);
+                    this.Logout();
+                    WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(PageUrl + urlParams);
                     if (expectToOpen && !IsOpen())
                     {
-                        this.Logout();
-                        WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(urlParams);
-                        if (expectToOpen && !IsOpen())
-                        {
-                            LogHelper.Log(LogHelper.LEVEL.ERROR, this.GetType(), "For Anguler Application Open(expectToOpen = '{0}', urlParams = '{1}') PageTitle = '{2}', PageUrl = '{3}', XPathValidator = '{4}': failed to open page", expectToOpen.ToString(), urlParams.ToString(), PageTitle, PageUrl, XPathValidator);
-                        }
+                        LogHelper.Log(LogHelper.LEVEL.ERROR, this.GetType(), "Open(expectToOpen = '{0}', urlParams = '{1}') PageTitle = '{2}', PageUrl = '{3}', XPathValidator = '{4}': failed to open page", expectToOpen.ToString(), urlParams.ToString(), PageTitle, PageUrl, XPathValidator);
                     }
                 }
             }
             else
             {
-                if (!IsOpen())
+                WebDriverHelper.GetCurrentWebDriver().Navigate().Refresh();
+                System.Threading.Thread.Sleep(2 * 1000);
+            }
+        }
+        public void DirectOpen(bool expectToOpen = true, string urlParams = "")
+        {
+            WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(PageUrl + urlParams);
+            Thread.Sleep(2 * 1000);
+            if (expectToOpen && !IsOpen())
+            {
+                WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(PageUrl + urlParams);
+                if (expectToOpen && !IsOpen())
                 {
-                    WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(PageUrl);
-                    System.Threading.Thread.Sleep(4 * 1000);
-                    if (expectToOpen && !IsOpen())
-                    {
-                        this.Logout();
-                        WebDriverHelper.GetCurrentWebDriver().Navigate().GoToUrl(PageUrl);
-                        if (expectToOpen && !IsOpen())
-                        {
-                            LogHelper.Log(LogHelper.LEVEL.ERROR, this.GetType(), "Open(expectToOpen = '{0}', urlParams = '{1}') PageTitle = '{2}', PageUrl = '{3}', XPathValidator = '{4}': failed to open page", expectToOpen.ToString(), urlParams.ToString(), PageTitle, PageUrl, XPathValidator);
-                        }
-                    }
-                }
-                else
-                {
-                    WebDriverHelper.GetCurrentWebDriver().Navigate().Refresh();
-                    System.Threading.Thread.Sleep(4 * 1000);
+                    LogHelper.Log(LogHelper.LEVEL.ERROR, this.GetType(), "Open(expectToOpen = '{0}', urlParams = '{1}') PageTitle = '{2}', PageUrl = '{3}', XPathValidator = '{4}': failed to open page", expectToOpen.ToString(), urlParams.ToString(), PageTitle, PageUrl, XPathValidator);
                 }
             }
         }

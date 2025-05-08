@@ -36,9 +36,9 @@ namespace Tsukaeru
         public static Dictionary<String, String> PAGE_OBJECT_URLS = new Dictionary<String, String>();
         public static string CurrentPage = "InvalidPage";
         public static string LOGS_DIRECTORY = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\..\..\Logs\");
-        public static string DOWNLOADS_DIRECTORY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"Downloads\";
-        public static string OUTPUT_DIRECTORY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"Output\";
-        public static string TEMPORARY_DIRECTORY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"Temp\";
-        public static string INPUT_DIRECOTRY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"TestInputs\";
+        public static string DOWNLOADS_DIRECTORY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"\..\..\Downloads\";
+        public static string OUTPUT_DIRECTORY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"\..\..\Output\";
+        public static string TEMPORARY_DIRECTORY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"\..\..\Temp\";
+        public static string INPUT_DIRECOTRY = DefaultLocation.Substring(0, DefaultLocation.Length - 9) + @"\..\..\TestInputs\";
     }
 }
