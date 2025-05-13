@@ -14,7 +14,7 @@ namespace Tsukaeru.Pages
             PageTitle = "ExampleJobPortal";
             PageUrl = "https://example.jobsite.com/jobs/";
             XPathValidator = "//span[text()='© 2024 Company Name. All rights reserved. ']";
-            WebDriverHelper.AddPageObject(PageUrl, this.ToString());
+            WebDriverHelper.AddPageObject(PageUrl, "");
         }
         #region PageElements
         private BaseElement jobTitle = null;

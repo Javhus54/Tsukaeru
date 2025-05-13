@@ -62,8 +62,8 @@ namespace Tsukaeru
             dataTable.Columns.Add("PostingDate");
 
             //TestStart
-            int startingJobID = 146000;
-            for (int i = startingJobID; i < startingJobID + 20; i++)
+            int startingJobID = 144000;
+            for (int i = startingJobID; i < startingJobID + 5000; i++)
             {
                 jobPortalPage.DirectOpen(false, i.ToString());
                 try
